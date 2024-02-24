@@ -1,6 +1,6 @@
 import { SerialPort } from 'serialport';
 
-const path = '/dev/tty.usbserial-210';
+const path = '/dev/ttyUSB0';
 const baudRate = 9600;
 
 const serialport = new SerialPort({ path, baudRate });
@@ -9,21 +9,38 @@ serialport.on('open', () => {
   console.log('connected to serial port: ', path);
 });
 
-let buffer = Buffer.alloc(0);
+const delimiter = Buffer.from('ffe1', 'hex');
+
+let dataBuffer = Buffer.alloc(0);
 
 serialport.on('data', chunk => {
-  buffer = Buffer.concat([buffer, chunk]);
+  dataBuffer = Buffer.concat([dataBuffer, chunk]);
 
-  let delimiterIndex = buffer.indexOf('ffe1', 0, 'hex');
+  let delimiterIndex = dataBuffer.indexOf(delimiter);
+
   while (delimiterIndex !== -1) {
-    const packet = buffer.slice(0, delimiterIndex);
+    // clear delimiter
+    const delimiterPacket = dataBuffer.subarray(0, delimiterIndex);
+    const packet = delimiterPacket.subarray(2);
+
     console.log({
-      buffer: packet,
-      hex: packet.toString('hex'),
+      utf8: packet.toString('utf-8'),
     });
 
-    buffer = buffer.slice(delimiterIndex + 2);
-
-    delimiterIndex = buffer.indexOf('ffe1', 0, 'hex');
+    dataBuffer = dataBuffer.subarray(delimiterIndex + 2);
+    delimiterIndex = dataBuffer.indexOf(delimiter);
   }
+
+  // while (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+  //   const data = dataBuffer.slice(startIndex + 4, endIndex);
+
+  //   console.log({
+  //     data,
+  //   });
+
+  //   dataBuffer = dataBuffer.slice(endIndex + 4);
+
+  //   startIndex = dataBuffer.indexOf(startDelimiter);
+  //   endIndex = dataBuffer.indexOf(endDelimiter);
+  // }
 });
