@@ -30,17 +30,4 @@ serialport.on('data', chunk => {
     dataBuffer = dataBuffer.subarray(delimiterIndex + 2);
     delimiterIndex = dataBuffer.indexOf(delimiter);
   }
-
-  // while (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
-  //   const data = dataBuffer.slice(startIndex + 4, endIndex);
-
-  //   console.log({
-  //     data,
-  //   });
-
-  //   dataBuffer = dataBuffer.slice(endIndex + 4);
-
-  //   startIndex = dataBuffer.indexOf(startDelimiter);
-  //   endIndex = dataBuffer.indexOf(endDelimiter);
-  // }
 });
